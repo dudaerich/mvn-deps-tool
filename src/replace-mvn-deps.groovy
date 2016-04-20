@@ -64,7 +64,13 @@ class Pom {
 /* ############# Main program ############# */
 
 def cli = new CliBuilder(usage: 'groovy replace-mvn-deps <maven project> <file with maven dependencies>')
+cli.h(longOpt: 'help', 'Print this help.')
 def options = cli.parse(args)
+
+if (options.h || options.arguments().size() != 2) {
+    cli.usage()
+    System.exit(1)
+}
 
 File mavenProject = new File(options.arguments().get(0))
 URL mavenDeps = new URL(options.arguments().get(1))
