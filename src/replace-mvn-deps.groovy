@@ -73,7 +73,7 @@ if (options.h || options.arguments().size() != 2) {
 }
 
 File mavenProject = new File(options.arguments().get(0))
-URL mavenDeps = new URL(options.arguments().get(1))
+File mavenDeps = new File(options.arguments().get(1))
 
 def poms = []
 mavenProject.eachFileRecurse(FileType.FILES, {
@@ -84,18 +84,13 @@ mavenProject.eachFileRecurse(FileType.FILES, {
     }
 })
 
-BufferedReader readerMvnDeps = new BufferedReader(new InputStreamReader(mavenDeps.openStream()))
-
-String line = null
-while ((line = readerMvnDeps.readLine()) != null) {
+mavenDeps.eachLine { line ->
     def res = line.split(':')
 
     for (Pom pom : poms) {
         pom.replaceDep(res[0], res[1], res[2])
     }
 }
-
-readerMvnDeps.close()
 
 for (Pom pom : poms) {
     pom.serialize()
