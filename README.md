@@ -17,7 +17,7 @@ groovy replace-mvn-deps.groovy <command> <maven project> <file with maven depend
 * Tool reads \<file with maven dependencies\> and it tries to find each dependency in the project. If the dependency is found, the tool modifies version of the dependency in all occurences.
 * Finally if you used
   * _replace_ command - all changes are persisted to the disc (poms are replaced).
-  * _bom_ command - the bom with dependencies is printed on standard output. You can use [POM manipulation extension](https://libraries.io/github/the-container-store/pom-manipulation-ext) for replacing versions of dependencies.
+  * _bom_ command - the bom with dependencies is printed to standard output. You can use [POM manipulation extension](https://libraries.io/github/the-container-store/pom-manipulation-ext) for replacing versions of dependencies.
 
 ## Limitation
 * All poms must be valid XML files.
