@@ -137,10 +137,10 @@ if (command == Command.REPLACE) {
     def writer = new StringWriter()
     def xmlBuilder = new MarkupBuilder(writer)
     xmlBuilder.project {
-        modelVersion('4.0.0')
-        groupId('com.redhat.qe.artemis')
-        artifactId('artemis-upstream-testsuite-dependencies')
-        version('1.0.0')
+        modelVersion(System.getProperty('modelVersion', '4.0.0'))
+        groupId(System.getProperty('groupId', 'org.default'))
+        artifactId(System.getProperty('artifactId', 'default'))
+        version(System.getProperty('version', '1.0.0'))
         dependencyManagement {
             dependencies {
                 deps.each { dep ->
