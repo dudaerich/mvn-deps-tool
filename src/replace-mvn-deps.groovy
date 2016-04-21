@@ -1,7 +1,22 @@
 import groovy.io.FileType
+import groovy.xml.MarkupBuilder
 import groovy.xml.XmlUtil
 
 /* ############# Helpers ############# */
+
+class Command {
+    final static int ERR = -1
+    final static int REPLACE = 0
+    final static int BOM = 1
+
+    public static int parse(String command) {
+        switch (command.toUpperCase()) {
+            case "REPLACE": return REPLACE
+            case "BOM": return BOM
+            default: return ERR
+        }
+    }
+}
 
 class Pom {
     File file = null
@@ -49,6 +64,10 @@ class Pom {
         writer.close()
     }
 
+    boolean contains(String groupId, String artifactId) {
+        return depsManagement.find( { it.groupId == groupId && it.artifactId == artifactId } ) != null || deps.find( { it.groupId == groupId && it.artifactId == artifactId } ) != null
+    }
+
     String toString() {
         StringBuilder resp = new StringBuilder(file.getAbsolutePath())
         resp.append('\n')
@@ -63,17 +82,24 @@ class Pom {
 
 /* ############# Main program ############# */
 
-def cli = new CliBuilder(usage: 'groovy replace-mvn-deps <maven project> <file with maven dependencies>')
+def cli = new CliBuilder(usage: 'groovy replace-mvn-deps <command> <maven project> <file with maven dependencies>')
 cli.h(longOpt: 'help', 'Print this help.')
 def options = cli.parse(args)
 
-if (options.h || options.arguments().size() != 2) {
+if (options.h || options.arguments().size() != 3) {
     cli.usage()
     System.exit(1)
 }
 
-File mavenProject = new File(options.arguments().get(0))
-File mavenDeps = new File(options.arguments().get(1))
+int command = Command.parse(options.arguments().get(0))
+
+if (command == Command.ERR) {
+    cli.usage()
+    System.exit(1)
+}
+
+File mavenProject = new File(options.arguments().get(1))
+File mavenDeps = new File(options.arguments().get(2))
 
 def poms = []
 mavenProject.eachFileRecurse(FileType.FILES, {
@@ -84,15 +110,49 @@ mavenProject.eachFileRecurse(FileType.FILES, {
     }
 })
 
-mavenDeps.eachLine { line ->
-    def res = line.split(':')
+if (command == Command.REPLACE) {
+    mavenDeps.eachLine { line ->
+        def gav = line.split(':')
+
+        for (Pom pom : poms) {
+            pom.replaceDep(gav[0], gav[1], gav[2])
+        }
+    }
 
     for (Pom pom : poms) {
-        pom.replaceDep(res[0], res[1], res[2])
+        pom.serialize()
     }
-}
+} else if (command == Command.BOM) {
+    def deps = []
+    mavenDeps.eachLine { line ->
+        def gav = line.split(':')
 
-for (Pom pom : poms) {
-    pom.serialize()
+        for (Pom pom : poms) {
+            if (pom.contains(gav[0], gav[1])) {
+                deps.add([ groupId: gav[0], artifactId: gav[1], version: gav[2] ])
+                break
+            }
+        }
+    }
+    def writer = new StringWriter()
+    def xmlBuilder = new MarkupBuilder(writer)
+    xmlBuilder.project {
+        modelVersion('4.0.0')
+        groupId('com.redhat.qe.artemis')
+        artifactId('artemis-upstream-testsuite-dependencies')
+        version('1.0.0')
+        dependencyManagement {
+            dependencies {
+                deps.each { dep ->
+                    dependency {
+                        groupId(dep.groupId)
+                        artifactId(dep.artifactId)
+                        version(dep.version)
+                    }
+                }
+            }
+        }
+    }
+    println writer
 }
 
