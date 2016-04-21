@@ -82,7 +82,7 @@ class Pom {
 
 /* ############# Main program ############# */
 
-def cli = new CliBuilder(usage: 'groovy replace-mvn-deps <command> <maven project> <file with maven dependencies>')
+def cli = new CliBuilder(usage: 'groovy mvn-deps-tool.groovy <command> <maven project> <file with maven dependencies>')
 cli.h(longOpt: 'help', 'Print this help.')
 def options = cli.parse(args)
 

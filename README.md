@@ -3,7 +3,7 @@ Tool for replacing dependencies in maven project
 
 ## Usage
 ```
-groovy replace-mvn-deps.groovy <command> <maven project> <file with maven dependencies>
+groovy mvn-deps-tool.groovy <command> <maven project> <file with maven dependencies>
 ```
 
 * \<command\> - you can use _replace_ or _bom_, see _How it Works_ for explanation what each command does
