@@ -129,10 +129,12 @@ if (command == Command.REPLACE) {
     mavenDeps.eachLine { line ->
         def gav = line.split(':')
 
-        for (Pom pom : poms) {
-            if (pom.contains(gav[0], gav[1])) {
-                deps.add([ groupId: gav[0], artifactId: gav[1], version: gav[2] ])
-                break
+        if (gav.size() >= 3) {
+            for (Pom pom : poms) {
+                if (pom.contains(gav[0], gav[1])) {
+                    deps.add([ groupId: gav[0], artifactId: gav[1], version: gav[2] ])
+                    break
+                }
             }
         }
     }
